@@ -1,1 +1,7 @@
-/config.txt
+# Env. variables for local dev
+/local_config.sh
+
+/main
+
+# Config file for fly.io deployment
+/fly.toml

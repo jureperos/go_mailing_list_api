@@ -45,8 +45,6 @@ func main() {
     // TODO: Make new endpoint to handle unsubscribe
 
     // Listen from all adresses(0.0.0.0) when deploying to fly.io
-    // poglej če se splača dodati naslednjo linijo
-    // kot argument temu: log.Fatal(http.ListenAndServe....)
     http.ListenAndServe("0.0.0.0:" + localDevPort, nil)
 
 }
@@ -87,19 +85,6 @@ func dbWrap(db *sql.DB) http.HandlerFunc {
             w.WriteHeader(http.StatusBadRequest)
         }
 
-        ///// TODO: EMAIL VERIFICATION!!! /////
-        //update: i wont be doing this
-
-        /*  1. Generate verification token for user
-            2. Send email with verification token as part of the url and
-               store the time the token was generated. Decide how long
-               the token should be active.
-            3. When the user clicks the url, parse the url and verify that
-               the token is valid
-            4. Update user status to valid
-            5. Send confirmation email
-        */
-
         sqlStatement := "INSERT INTO subscribers (email) VALUES ($1)"
         _, query_err := db.Query(sqlStatement, email.Email)
 
@@ -109,6 +94,7 @@ func dbWrap(db *sql.DB) http.HandlerFunc {
             return
         }
 
+        //template for confirmation email
         emailConfirmErr := confirmationEmail(email.Email)
         if emailConfirmErr != nil {
             log.Println("Error sending confirmation email", emailConfirmErr)
@@ -133,34 +119,6 @@ func confirmationEmail(email string) error {
 
     return sendEmailErr
 }
-
-///// CREATE GET REQUEST TO GET EMAILS FOR MAILING LIST /////
-
-//func handleGetQuery() *string {
-//
-//    rows, err := db.Query("SELECT * FROM subscribers")
-//
-//    tableString := "\nid  Entry_time  email\n"
-//
-//    for rows.Next() {
-//        var id int
-//        var entry_time time.Time
-//        var email string
-//
-//
-//        err := rows.Scan(&id, &entry_time, &email)
-//        if err != nil {
-//            log.Println(err)
-//        }
-//
-//        tableString += fmt.Sprintf("id: %d\t Entry_time: %v\t email: %s\n", id, entry_time.Format("01-02-2006 03:04"), email)
-//    }
-//
-//
-//    log.Print(tableString)
-//
-//    return &tableString
-//}
 
 func validateEmailFormat(email string) bool {
     regex := regexp.MustCompile(`^([a-zA-Z0-9_\.-]+)@([a-zA-Z0-9_\.-]+)(\.[a-zA-Z0-9_\.-]+)*$`)
